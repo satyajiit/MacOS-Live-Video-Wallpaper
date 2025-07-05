@@ -193,14 +193,18 @@ clone_repository() {
         # Ensure git is available before cloning
         ensure_git
 
+        # Handle existing directory
+        local repo_dir="MacOS-Live-Video-Wallpaper"
+        if [[ -d "$repo_dir" ]]; then
+            print_warning "Directory $repo_dir already exists"
+            print_info "Removing existing directory to ensure clean installation..."
+            rm -rf "$repo_dir"
+        fi
+
         print_info "Cloning repository..."
         git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git
         cd MacOS-Live-Video-Wallpaper
         print_success "Repository cloned successfully"
-
-        # Restart the script from the new location
-        print_info "Restarting setup from repository directory..."
-        exec ./setup.sh
     else
         print_error "package.json not found. Are you in the correct directory?"
         print_info "Please run this script from the MacOS-Live-Video-Wallpaper directory"

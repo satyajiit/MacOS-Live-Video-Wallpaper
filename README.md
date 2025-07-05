@@ -50,6 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpape
 **🏁 RACE RESULTS:** The script will:
 
 - 📁 Clone repository (if running via curl) - *Track Setup*
+- 🗑️ Remove existing directory (if present) - *Clean Slate*
 - 🏎️ Install Homebrew (if needed) - *Pit Stop Ready*
 - 🔧 Install git (if needed) - *Version Control*
 - ⚡ Install Node.js (if needed) - *Engine Power*
