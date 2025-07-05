@@ -23,6 +23,23 @@
 
 ---
 
+## 🎬 **DEMO: SEE IT IN ACTION**
+
+<div align="center">
+
+**🏁 Watch the magic happen - From YouTube to Live Wallpaper in minutes!**
+
+<video width="800" height="450" controls autoplay muted loop>
+  <source src="img/demo.webm" type="video/webm">
+  Your browser does not support the video tag. <a href="img/demo.webm">Click here to download the demo video</a>.
+</video>
+
+*🎯 **Demo shows**: YouTube video download → HEVC conversion → Live wallpaper installation*
+
+</div>
+
+---
+
 ## 🏁 **LIGHTS OUT AND AWAY WE GO!**
 
 Experience the adrenaline of Formula 1 right on your desktop! This production-ready tool transforms any YouTube video into a dynamic macOS wallpaper with the precision of a pit stop and the speed of a DRS overtake.
