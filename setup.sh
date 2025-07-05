@@ -153,7 +153,7 @@ install_nodejs() {
 install_system_deps() {
     print_step "Installing system dependencies"
     
-    local deps=("ffmpeg" "yt-dlp")
+    local deps=("git" "ffmpeg" "yt-dlp")
     
     for dep in "${deps[@]}"; do
         if command_exists "$dep"; then
@@ -166,15 +166,37 @@ install_system_deps() {
     done
 }
 
+# Function to clone repository if needed
+clone_repository() {
+    print_step "Setting up project files"
+
+    if [[ -f "package.json" ]]; then
+        print_success "Already in project directory"
+        return 0
+    fi
+
+    # Check if we're running from curl (no local files)
+    if [[ ! -f "setup.sh" ]]; then
+        print_info "Cloning repository..."
+        git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git
+        cd MacOS-Live-Video-Wallpaper
+        print_success "Repository cloned successfully"
+    else
+        print_error "package.json not found. Are you in the correct directory?"
+        print_info "Please run this script from the MacOS-Live-Video-Wallpaper directory"
+        exit 1
+    fi
+}
+
 # Function to install npm dependencies
 install_npm_deps() {
     print_step "Installing Node.js dependencies"
-    
+
     if [[ ! -f "package.json" ]]; then
-        print_error "package.json not found. Are you in the correct directory?"
+        print_error "package.json not found. This should not happen after repository setup."
         exit 1
     fi
-    
+
     print_info "Running npm install..."
     npm install
     print_success "Node.js dependencies installed successfully"
@@ -215,6 +237,14 @@ verify_installation() {
         print_success "yt-dlp installed"
     else
         print_error "yt-dlp not found"
+        all_good=false
+    fi
+
+    # Check git
+    if command_exists git; then
+        print_success "git installed"
+    else
+        print_error "git not found"
         all_good=false
     fi
     
@@ -305,6 +335,9 @@ main() {
     install_homebrew
     install_nodejs
     install_system_deps
+
+    # Setup project files (after git is installed)
+    clone_repository
     install_npm_deps
     
     # Verify everything is working

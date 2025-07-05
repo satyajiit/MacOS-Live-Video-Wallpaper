@@ -50,7 +50,8 @@ curl -fsSL https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpape
 **🏁 RACE RESULTS:** The script will:
 - 🏎️ Install Homebrew (if needed) - *Pit Stop Ready*
 - ⚡ Install Node.js (if needed) - *Engine Power*
-- 🔧 Install ffmpeg and yt-dlp - *Precision Tools*
+- 🔧 Install git, ffmpeg and yt-dlp - *Precision Tools*
+- 📁 Clone repository (if running via curl) - *Track Setup*
 - 📦 Install all dependencies - *Full Tank*
 - 🎯 Create an easy launcher - *One-Click Start*
 - 🚀 Start the application automatically - *Lights Out!*
