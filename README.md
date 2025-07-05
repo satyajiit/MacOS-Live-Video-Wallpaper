@@ -29,10 +29,7 @@
 
 **🏁 Watch the magic happen - From YouTube to Live Wallpaper in minutes!**
 
-<video width="800" height="450" controls autoplay muted loop>
-  <source src="https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpaper/main/img/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag. <a href="https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpaper/main/img/demo.mp4">Click here to download the demo video</a>.
-</video>
+https://github.com/user-attachments/assets/8d5ae5e8-4cc8-43f7-a53c-00bf11b20c33
 
 *🎯 **Demo shows**: YouTube video download → HEVC conversion → Live wallpaper installation*
 
