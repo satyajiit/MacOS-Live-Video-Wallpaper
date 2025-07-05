@@ -193,18 +193,37 @@ clone_repository() {
         # Ensure git is available before cloning
         ensure_git
 
-        # Handle existing directory
+        # Handle existing directory more robustly
         local repo_dir="MacOS-Live-Video-Wallpaper"
         if [[ -d "$repo_dir" ]]; then
             print_warning "Directory $repo_dir already exists"
             print_info "Removing existing directory to ensure clean installation..."
-            rm -rf "$repo_dir"
+            rm -rf "$repo_dir" 2>/dev/null || {
+                print_warning "Could not remove directory, trying with sudo..."
+                sudo rm -rf "$repo_dir"
+            }
+        fi
+
+        # Ensure directory is completely gone
+        if [[ -d "$repo_dir" ]]; then
+            print_error "Failed to remove existing directory $repo_dir"
+            exit 1
         fi
 
         print_info "Cloning repository..."
-        git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git
-        cd MacOS-Live-Video-Wallpaper
-        print_success "Repository cloned successfully"
+        if git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git; then
+            cd MacOS-Live-Video-Wallpaper
+            print_success "Repository cloned successfully"
+        else
+            print_error "Failed to clone repository"
+            print_info "Trying alternative approach..."
+            # Alternative: clone to a temporary name and rename
+            local temp_dir="temp-repo-$$"
+            git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git "$temp_dir"
+            mv "$temp_dir" "$repo_dir"
+            cd MacOS-Live-Video-Wallpaper
+            print_success "Repository cloned successfully (alternative method)"
+        fi
     else
         print_error "package.json not found. Are you in the correct directory?"
         print_info "Please run this script from the MacOS-Live-Video-Wallpaper directory"
