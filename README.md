@@ -135,8 +135,8 @@ If you prefer to install dependencies manually:
 
 1. **Clone or download this repository**
    ```bash
-   git clone <repository-url>
-   cd yt-4k-downloader
+   git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper
+   cd MacOS-Live-Video-Wallpaper
    ```
 
 2. **Install Node.js dependencies**
