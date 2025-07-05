@@ -1,0 +1,52 @@
+{
+  "name": "macos-live-video-wallpaper",
+  "version": "1.0.0",
+  "description": "🏎️ Race into the future with stunning live video wallpapers! Transform any YouTube video into a dynamic macOS wallpaper with F1-inspired precision and speed. From Monaco's streets to your desktop - experience the thrill of motion.",
+  "main": "index.js",
+  "bin": {
+    "macos-live-video-wallpaper": "./index.js"
+  },
+  "scripts": {
+    "start": "sudo node index.js",
+    "set-wallpaper": "node index.js",
+    "refresh-wallpaper": "sudo node refresh-wallpaper.js",
+    "check-deps": "node -e \"require('./src/dependencies').performFullCheck()\"",
+    "setup": "./setup.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "macos",
+    "wallpaper",
+    "live-wallpaper",
+    "dynamic-wallpaper",
+    "youtube",
+    "video",
+    "4k",
+    "yt-dlp",
+    "ffmpeg",
+    "automation",
+    "f1",
+    "racing",
+    "motion",
+    "hevc",
+    "sequoia"
+  ],
+  "author": "MacOS Live Video Wallpaper",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "fluent-ffmpeg": "^2.1.3",
+    "yt-dlp-wrap": "^2.3.12"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/satyajiit/MacOS-Live-Video-Wallpaper/issues"
+  },
+  "homepage": "https://github.com/satyajiit/MacOS-Live-Video-Wallpaper#readme"
+}
