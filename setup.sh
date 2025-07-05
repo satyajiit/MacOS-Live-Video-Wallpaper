@@ -153,7 +153,7 @@ install_nodejs() {
 install_system_deps() {
     print_step "Installing system dependencies"
     
-    local deps=("git" "ffmpeg" "yt-dlp")
+    local deps=("ffmpeg" "yt-dlp")
     
     for dep in "${deps[@]}"; do
         if command_exists "$dep"; then
@@ -164,6 +164,19 @@ install_system_deps() {
             print_success "$dep installed successfully"
         fi
     done
+}
+
+# Function to ensure git is available
+ensure_git() {
+    print_step "Checking git installation"
+
+    if command_exists git; then
+        print_success "git is already installed"
+    else
+        print_info "Installing git via Homebrew..."
+        brew install git
+        print_success "git installed successfully"
+    fi
 }
 
 # Function to clone repository if needed
@@ -177,10 +190,17 @@ clone_repository() {
 
     # Check if we're running from curl (no local files)
     if [[ ! -f "setup.sh" ]]; then
+        # Ensure git is available before cloning
+        ensure_git
+
         print_info "Cloning repository..."
         git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git
         cd MacOS-Live-Video-Wallpaper
         print_success "Repository cloned successfully"
+
+        # Restart the script from the new location
+        print_info "Restarting setup from repository directory..."
+        exec ./setup.sh
     else
         print_error "package.json not found. Are you in the correct directory?"
         print_info "Please run this script from the MacOS-Live-Video-Wallpaper directory"
@@ -331,13 +351,13 @@ main() {
     # Request sudo permissions upfront
     request_sudo
     
+    # Setup project files (handles git installation and restart if needed)
+    clone_repository
+
     # Install dependencies
     install_homebrew
     install_nodejs
     install_system_deps
-
-    # Setup project files (after git is installed)
-    clone_repository
     install_npm_deps
     
     # Verify everything is working
