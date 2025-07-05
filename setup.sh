@@ -352,46 +352,67 @@ show_completion() {
     print_header "🎉 Setup Complete!"
 
     echo -e "${GREEN}${ROCKET} Your macOS Live Video Wallpaper Setter is ready to use!${NC}\n"
-    
+
     echo -e "${CYAN}${ARROW} Quick Start Options:${NC}"
     echo -e "  ${YELLOW}1. Double-click:${NC} run-wallpaper-setter.sh"
     echo -e "  ${YELLOW}2. Terminal:${NC}     sudo node index.js"
     echo -e "  ${YELLOW}3. npm script:${NC}   sudo npm start"
     echo
-    
+
     echo -e "${CYAN}${ARROW} What happens next:${NC}"
     echo -e "  • You'll be prompted for a YouTube URL"
     echo -e "  • The video will be downloaded and converted"
     echo -e "  • You'll be guided through wallpaper setup"
     echo -e "  • Restart your Mac to see the live wallpaper"
     echo
-    
+
     echo -e "${CYAN}${ARROW} Useful commands:${NC}"
     echo -e "  • Fix static wallpaper: ${YELLOW}npm run refresh-wallpaper${NC}"
     echo -e "  • Check dependencies:   ${YELLOW}npm run check-deps${NC}"
     echo
-    
-    read -p "Would you like to start the wallpaper setter now? (Y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-        echo -e "\n${GREEN}Setup complete! Run the application whenever you're ready.${NC}"
-    else
-        echo -e "\n${GREEN}${ROCKET} Launching macOS Live Video Wallpaper Setter...${NC}\n"
-        if [[ -f "index.js" ]]; then
-            print_info "Starting application with administrator privileges..."
-            # Test if sudo is still valid
-            if sudo -n true 2>/dev/null; then
-                print_info "Using existing sudo session..."
-            else
-                print_info "Refreshing administrator privileges..."
-                sudo -v
-            fi
-            sudo node index.js
+
+    # Check if we're running in an interactive terminal and stdin is available
+    if [[ -t 0 && -t 1 ]]; then
+        # Interactive terminal - show prompt
+        echo -n "Would you like to start the wallpaper setter now? (Y/n): "
+        read -r REPLY
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            echo -e "\n${GREEN}Setup complete! Run the application whenever you're ready.${NC}"
         else
-            print_error "index.js not found in $(pwd)"
-            print_info "Directory contents:"
-            ls -la
+            launch_application
         fi
+    else
+        # Non-interactive (like curl | bash) - provide instructions and attempt auto-launch
+        print_info "Running in non-interactive mode (e.g., via curl | bash)"
+        echo -e "\n${YELLOW}${ARROW} Auto-launching the wallpaper setter in 3 seconds...${NC}"
+        echo -e "${CYAN}${INFO} Press Ctrl+C to cancel and run manually later${NC}"
+
+        # Give user a chance to cancel
+        sleep 3
+
+        launch_application
+    fi
+}
+
+# Function to launch the application
+launch_application() {
+    echo -e "\n${GREEN}${ROCKET} Launching macOS Live Video Wallpaper Setter...${NC}\n"
+    if [[ -f "index.js" ]]; then
+        print_info "Starting application with administrator privileges..."
+        # Test if sudo is still valid
+        if sudo -n true 2>/dev/null; then
+            print_info "Using existing sudo session..."
+        else
+            print_info "Refreshing administrator privileges..."
+            sudo -v
+        fi
+        sudo node index.js
+    else
+        print_error "index.js not found in $(pwd)"
+        print_info "Directory contents:"
+        ls -la
+        print_info "Please navigate to the correct directory and run: sudo node index.js"
     fi
 }
 
@@ -427,8 +448,11 @@ main() {
     install_npm_deps
     
     # Verify everything is working
+    print_info "Verifying installation..."
     if verify_installation; then
+        print_info "Creating launcher script..."
         create_launcher
+        print_info "Showing completion message..."
         show_completion
     else
         print_error "Setup failed. Please check the errors above and try again."
