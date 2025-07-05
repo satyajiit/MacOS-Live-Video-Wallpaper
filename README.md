@@ -30,8 +30,8 @@
 **🏁 Watch the magic happen - From YouTube to Live Wallpaper in minutes!**
 
 <video width="800" height="450" controls autoplay muted loop>
-  <source src="img/demo.webm" type="video/webm">
-  Your browser does not support the video tag. <a href="img/demo.webm">Click here to download the demo video</a>.
+  <source src="img/demo.mp4" type="video/webm">
+  Your browser does not support the video tag. <a href="img/demo.mp4">Click here to download the demo video</a>.
 </video>
 
 *🎯 **Demo shows**: YouTube video download → HEVC conversion → Live wallpaper installation*
