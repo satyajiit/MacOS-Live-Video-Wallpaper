@@ -10,6 +10,8 @@
     "start": "sudo node index.js",
     "set-wallpaper": "node index.js",
     "refresh-wallpaper": "sudo node refresh-wallpaper.js",
+    "cleanup": "node cleanup.js",
+    "fix-permissions": "node index.js --cleanup",
     "check-deps": "node -e \"require('./src/dependencies').performFullCheck()\"",
     "setup": "./setup.sh",
     "test": "echo \"Error: no test specified\" && exit 1"

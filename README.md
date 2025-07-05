@@ -241,6 +241,52 @@ sudo node index.js
 - If only .mp4 exists, it will convert to .mov and clean up the original
 - **File permissions are automatically fixed** when running with `sudo` to ensure easy deletion later
 
+### File Permission Issues
+
+If you encounter files that require `sudo` to delete (common when the app runs with elevated privileges), we provide
+multiple solutions:
+
+#### Quick Fix Options
+
+```bash
+# Option 1: Dedicated cleanup utility
+node cleanup.js
+
+# Option 2: Built-in cleanup command
+node index.js --cleanup
+
+# Option 3: NPM scripts
+npm run cleanup
+npm run fix-permissions
+```
+
+#### What the Cleanup Utility Does
+
+The cleanup utility will:
+
+- 🔍 **Scan** for `.mov` and `.mp4` files with permission issues
+- 📂 **Check** both `outputs/` and `outputs/wallpaper_backups/` directories
+- 🔧 **Fix** ownership and permissions to match your user account
+- 🗑️ **Optionally delete** problematic files if you choose
+- 📊 **Provide** detailed reports of all actions taken
+
+#### Interactive Options
+
+When you run the cleanup utility, you'll be presented with options:
+
+1. **Fix permissions** - Makes files deletable without sudo (recommended)
+2. **Delete files** - Permanently removes all problematic files
+3. **Exit** - Leave files unchanged
+
+#### Prevention
+
+The application now automatically:
+
+- ✅ Fixes permissions for newly created `.mov` files
+- ✅ Fixes permissions for wallpaper backup files
+- ✅ Uses proper ownership when running with `sudo`
+- ✅ Provides better error handling for permission issues
+
 ### Video Processing Features
 - **Automatic Duration Extension**: Videos shorter than 3 minutes are automatically extended by looping
 - **4K Upscaling**: All videos are converted to 4K resolution (3840x2160) for optimal wallpaper quality

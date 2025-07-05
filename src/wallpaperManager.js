@@ -179,14 +179,24 @@ class WallpaperManager {
     async createBackup(wallpaperFile) {
         try {
             Utils.ensureDirectoryExists(this.backupDir);
-            
+
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const backupName = `${path.parse(wallpaperFile.name).name}_backup_${timestamp}.mov`;
             const backupPath = path.join(this.backupDir, backupName);
-            
+
             fs.copyFileSync(wallpaperFile.path, backupPath);
-            
-            logger.success(`💾 Backup created: ${backupName}`);
+
+            // Fix permissions for the backup file
+            logger.info('🔧 Fixing backup file permissions...');
+            const permissionFixed = await Utils.fixFilePermissions(backupPath);
+
+            if (permissionFixed) {
+                logger.success(`💾 Backup created with proper permissions: ${backupName}`);
+            } else {
+                logger.success(`💾 Backup created: ${backupName}`);
+                logger.warning('⚠️  Backup file may require sudo to delete - run cleanup utility if needed');
+            }
+
             return backupPath;
         } catch (error) {
             logger.warning(`Could not create backup: ${error.message}`);

@@ -218,51 +218,17 @@ class VideoDownloader {
     /**
      * Fix file permissions and ownership for converted files
      */
-    fixFilePermissions(filePath) {
+    async fixFilePermissions(filePath) {
         try {
-            const { spawn } = require('child_process');
+            logger.info(`🔧 Fixing file permissions for: ${path.basename(filePath)}`);
 
-            // Get the original user info when running with sudo
-            const originalUser = process.env.SUDO_USER || process.env.USER;
-            const originalUid = process.env.SUDO_UID;
-            const originalGid = process.env.SUDO_GID;
+            const success = await Utils.fixFilePermissions(filePath);
 
-            if (originalUser && originalUid && originalGid) {
-                logger.info(`🔧 Fixing file permissions for user: ${originalUser}`);
-
-                // Change ownership back to original user
-                const chownProcess = spawn('chown', [`${originalUid}:${originalGid}`, filePath], {
-                    stdio: 'pipe'
-                });
-
-                chownProcess.on('close', (code) => {
-                    if (code === 0) {
-                        // Set readable/writable permissions for user and group
-                        fs.chmodSync(filePath, 0o664); // rw-rw-r--
-                        logger.success('✅ File permissions fixed successfully');
-                    } else {
-                        logger.warning('⚠️  Failed to change file ownership, but file is accessible');
-                    }
-                });
-
-                chownProcess.on('error', (error) => {
-                    logger.warning(`⚠️  Permission fix failed: ${error.message}`);
-                    // Try to at least make it readable/writable
-                    try {
-                        fs.chmodSync(filePath, 0o666); // rw-rw-rw-
-                        logger.info('💡 Made file readable/writable for all users');
-                    } catch (chmodError) {
-                        logger.warning('⚠️  Could not modify file permissions');
-                    }
-                });
+            if (success) {
+                logger.success('✅ File permissions fixed successfully');
             } else {
-                // Not running with sudo, just ensure good permissions
-                try {
-                    fs.chmodSync(filePath, 0o664); // rw-rw-r--
-                    logger.success('✅ File permissions set successfully');
-                } catch (error) {
-                    logger.warning(`⚠️  Could not set file permissions: ${error.message}`);
-                }
+                logger.warning('⚠️  Failed to fix file permissions completely');
+                logger.info('💡 You may need to run the cleanup utility later');
             }
         } catch (error) {
             logger.warning(`⚠️  Permission fix failed: ${error.message}`);
@@ -434,7 +400,11 @@ class VideoDownloader {
                         logger.info('🎬 Video optimized for macOS live wallpaper with 4K 60fps HEVC');
 
                         // Fix file permissions and ownership
-                        this.fixFilePermissions(outputPath);
+                        this.fixFilePermissions(outputPath).then(() => {
+                            // Permission fixing completed
+                        }).catch((error) => {
+                            logger.warning(`⚠️  Permission fix failed: ${error.message}`);
+                        });
 
                         resolve(outputPath);
                     } else {

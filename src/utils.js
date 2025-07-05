@@ -250,37 +250,110 @@ class Utils {
     /**
      * Fix file permissions for files created with sudo
      */
-    static fixFilePermissions(filePath) {
-        try {
-            const { spawn } = require('child_process');
+    static async fixFilePermissions(filePath) {
+        return new Promise((resolve) => {
+            try {
+                const {spawn} = require('child_process');
 
-            // Get the original user info when running with sudo
-            const originalUser = process.env.SUDO_USER || process.env.USER;
-            const originalUid = process.env.SUDO_UID;
-            const originalGid = process.env.SUDO_GID;
+                // Get the original user info when running with sudo
+                const originalUser = process.env.SUDO_USER || process.env.USER;
+                const originalUid = process.env.SUDO_UID;
+                const originalGid = process.env.SUDO_GID;
 
-            if (originalUser && originalUid && originalGid) {
-                // Change ownership back to original user
-                const chownProcess = spawn('chown', [`${originalUid}:${originalGid}`, filePath], {
-                    stdio: 'pipe'
-                });
+                if (originalUser && originalUid && originalGid) {
+                    // Change ownership back to original user
+                    const chownProcess = spawn('chown', [`${originalUid}:${originalGid}`, filePath], {
+                        stdio: 'pipe'
+                    });
 
-                chownProcess.on('close', (code) => {
-                    if (code === 0) {
-                        // Set readable/writable permissions for user and group
+                    chownProcess.on('close', (code) => {
+                        if (code === 0) {
+                            try {
+                                // Set readable/writable permissions for user and group
+                                fs.chmodSync(filePath, 0o664); // rw-rw-r--
+                                resolve(true);
+                            } catch (chmodError) {
+                                resolve(false);
+                            }
+                        } else {
+                            resolve(false);
+                        }
+                    });
+
+                    chownProcess.on('error', () => {
+                        resolve(false);
+                    });
+                } else {
+                    // Not running with sudo, just ensure good permissions
+                    try {
                         fs.chmodSync(filePath, 0o664); // rw-rw-r--
-                        return true;
+                        resolve(true);
+                    } catch (error) {
+                        resolve(false);
                     }
-                    return false;
-                });
-            } else {
-                // Not running with sudo, just ensure good permissions
-                fs.chmodSync(filePath, 0o664); // rw-rw-r--
+                }
+            } catch (error) {
+                resolve(false);
+            }
+        });
+    }
+
+    /**
+     * Check if file has permission issues (requires sudo to delete)
+     */
+    static hasPermissionIssues(filePath) {
+        try {
+            if (!fs.existsSync(filePath)) return false;
+
+            const stats = fs.statSync(filePath);
+            const currentUser = process.getuid ? process.getuid() : null;
+
+            // Check if file is owned by root but we're not root
+            if (stats.uid === 0 && currentUser !== 0) {
+                return true;
+            }
+
+            // Check if we can write to the file
+            try {
+                fs.accessSync(filePath, fs.constants.W_OK);
+                return false;
+            } catch (error) {
                 return true;
             }
         } catch (error) {
-            return false;
+            return true;
         }
+    }
+
+    /**
+     * Find all files with permission issues in a directory
+     */
+    static findFilesWithPermissionIssues(dirPath, extensions = ['.mov', '.mp4']) {
+        const problematicFiles = [];
+
+        try {
+            if (!fs.existsSync(dirPath)) return problematicFiles;
+
+            const files = fs.readdirSync(dirPath, {withFileTypes: true});
+
+            for (const file of files) {
+                const fullPath = path.join(dirPath, file.name);
+
+                if (file.isDirectory()) {
+                    // Recursively check subdirectories
+                    problematicFiles.push(...this.findFilesWithPermissionIssues(fullPath, extensions));
+                } else if (file.isFile()) {
+                    const ext = path.extname(file.name).toLowerCase();
+                    if (extensions.includes(ext) && this.hasPermissionIssues(fullPath)) {
+                        problematicFiles.push(fullPath);
+                    }
+                }
+            }
+        } catch (error) {
+            // Directory might not be accessible
+        }
+
+        return problematicFiles;
     }
 }
 

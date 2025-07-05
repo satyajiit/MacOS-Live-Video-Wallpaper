@@ -209,8 +209,53 @@ class MacOSLiveWallpaperSetter {
 
 // Run the application if this file is executed directly
 if (require.main === module) {
+    const args = process.argv.slice(2);
+
+    // Check for help or cleanup commands
+    if (args.includes('--help') || args.includes('-h')) {
+        displayUsage();
+        process.exit(0);
+    }
+
+    if (args.includes('--cleanup') || args.includes('cleanup')) {
+        const CleanupUtility = require('./cleanup');
+        const cleanup = new CleanupUtility();
+        cleanup.run().catch((error) => {
+            logger.error(`❌ Cleanup failed: ${error.message}`);
+            process.exit(1);
+        });
+        return;
+    }
+
     const app = new MacOSLiveWallpaperSetter();
     app.run();
+}
+
+/**
+ * Display usage information
+ */
+function displayUsage() {
+    logger.info('🎬 macOS Live Video Wallpaper Setter');
+    logger.info('═══════════════════════════════════════');
+    logger.info('');
+    logger.info('📋 Usage:');
+    logger.info('   node index.js                       (interactive mode)');
+    logger.info('   sudo node index.js                  (recommended)');
+    logger.info('   node index.js --cleanup             (fix file permissions)');
+    logger.info('   node cleanup.js                     (alternative cleanup)');
+    logger.info('');
+    logger.info('📝 Examples:');
+    logger.info('   node index.js                       # Start interactive video downloader');
+    logger.info('   sudo node index.js                  # With wallpaper installation');
+    logger.info('   node index.js --cleanup             # Fix permission issues');
+    logger.info('');
+    logger.info('💡 Tips:');
+    logger.info('   • Use sudo for automatic wallpaper installation');
+    logger.info('   • Videos are converted to 4K 60fps HEVC .mov format');
+    logger.info('   • Original files are cleaned up after conversion');
+    logger.info('   • Run --cleanup if files require sudo to delete');
+    logger.info('   • Supports YouTube, Vimeo, and many other platforms');
+    logger.info('');
 }
 
 module.exports = MacOSLiveWallpaperSetter;
