@@ -58,7 +58,10 @@ curl -fsSL https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpape
 - 📦 Install all dependencies - *Full Tank*
 - 🎯 Create an easy launcher - *One-Click Start*
 - 🔐 Seamless privilege management - *No Extra Passwords*
-- 🚀 Start the application automatically - *Lights Out!*
+- 🚀 **Smart Interactive Mode** - *Automatically opens new terminal for proper input handling*
+
+> **🎯 NEW: Smart Terminal Detection**
+> When installed via curl, the setup automatically detects non-interactive mode and opens a new Terminal window for proper input handling. This ensures the YouTube URL prompt works perfectly every time!
 
 ## 🎯 **GRID POSITIONS** (Usage Options)
 

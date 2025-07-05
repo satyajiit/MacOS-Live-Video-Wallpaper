@@ -327,7 +327,7 @@ verify_installation() {
 # Function to create launcher script
 create_launcher() {
     print_step "Creating easy launcher script"
-    
+
     cat > run-wallpaper-setter.sh << 'EOF'
 #!/bin/bash
 
@@ -342,9 +342,105 @@ echo
 
 sudo node index.js
 EOF
-    
+
     chmod +x run-wallpaper-setter.sh
     print_success "Created run-wallpaper-setter.sh launcher"
+}
+
+# Function to create interactive launcher for curl installations
+create_interactive_launcher() {
+    print_step "Creating interactive launcher for new terminal"
+
+    cat > launch-interactive.sh << 'EOF'
+#!/bin/bash
+
+# macOS Live Video Wallpaper Setter - Interactive Launcher
+# This script is designed to run in a new terminal window after curl installation
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo -e "${GREEN}🎥 macOS Live Video Wallpaper Setter${NC}"
+echo -e "${CYAN}🚀 Interactive Mode - Ready for input!${NC}"
+echo
+echo -e "${YELLOW}📍 Working directory: $SCRIPT_DIR${NC}"
+echo
+
+# Verify we're in the right place
+if [[ ! -f "index.js" ]]; then
+    echo -e "${RED}❌ Error: index.js not found in current directory${NC}"
+    echo -e "${CYAN}Please navigate to the correct directory and run: sudo node index.js${NC}"
+    read -p "Press Enter to exit..."
+    exit 1
+fi
+
+# Check if sudo is available
+if ! sudo -n true 2>/dev/null; then
+    echo -e "${YELLOW}🔐 Administrator privileges required for wallpaper installation${NC}"
+    echo -e "${CYAN}You'll be prompted for your password...${NC}"
+    echo
+fi
+
+# Launch the application
+echo -e "${GREEN}🚀 Starting macOS Live Video Wallpaper Setter...${NC}"
+echo
+sudo node index.js
+
+# Keep terminal open after completion
+echo
+echo -e "${GREEN}✅ Application finished.${NC}"
+read -p "Press Enter to close this window..."
+EOF
+
+    chmod +x launch-interactive.sh
+    print_success "Created launch-interactive.sh for new terminal session"
+}
+
+# Function to launch application in new terminal window
+launch_in_new_terminal() {
+    print_step "Launching in new terminal window"
+
+    local script_path="$(pwd)/launch-interactive.sh"
+
+    # Try different methods to open a new terminal
+    if command_exists osascript; then
+        # macOS - use AppleScript to open Terminal
+        print_info "Opening new Terminal window..."
+        osascript << EOF
+tell application "Terminal"
+    activate
+    do script "cd '$PWD' && ./launch-interactive.sh"
+end tell
+EOF
+        print_success "New Terminal window opened with interactive wallpaper setter"
+        echo -e "\n${CYAN}${INFO} Look for the new Terminal window that just opened${NC}"
+        echo -e "${CYAN}${INFO} The wallpaper setter is now running in interactive mode${NC}"
+
+    elif command_exists open; then
+        # Alternative macOS method
+        print_info "Opening new terminal session..."
+        open -a Terminal "$script_path"
+        print_success "New Terminal session started"
+
+    else
+        # Fallback - provide manual instructions
+        print_warning "Could not automatically open new terminal"
+        echo -e "\n${YELLOW}${ARROW} Manual steps:${NC}"
+        echo -e "  1. Open a new Terminal window"
+        echo -e "  2. Run: ${YELLOW}cd '$PWD'${NC}"
+        echo -e "  3. Run: ${YELLOW}./launch-interactive.sh${NC}"
+        echo -e "\n${CYAN}${INFO} Or simply run: ${YELLOW}sudo node index.js${NC}"
+    fi
+
+    echo -e "\n${GREEN}Setup completed successfully!${NC}"
+    echo -e "${CYAN}The wallpaper setter is now ready to use in interactive mode.${NC}"
 }
 
 # Function to display completion message
@@ -371,8 +467,24 @@ show_completion() {
     echo -e "  • Check dependencies:   ${YELLOW}npm run check-deps${NC}"
     echo
 
-    # Check if we're running in an interactive terminal and stdin is available
-    if [[ -t 0 && -t 1 ]]; then
+    # Detect if we're running from curl (non-interactive setup)
+    local is_curl_install=false
+    if [[ ! -t 0 ]] || [[ "${SETUP_FROM_CURL:-}" == "true" ]] || [[ -z "${TERM:-}" ]]; then
+        is_curl_install=true
+    fi
+
+    if [[ "$is_curl_install" == true ]]; then
+        # Non-interactive mode (curl | bash) - switch to interactive terminal
+        print_info "Detected installation via curl - switching to interactive mode..."
+        echo -e "\n${YELLOW}${ARROW} Opening new interactive terminal session...${NC}"
+        echo -e "${CYAN}${INFO} This will allow proper input handling for the wallpaper setter${NC}"
+
+        # Create a script to launch in new terminal
+        create_interactive_launcher
+
+        # Launch in new terminal window
+        launch_in_new_terminal
+    else
         # Interactive terminal - show prompt
         echo -n "Would you like to start the wallpaper setter now? (Y/n): "
         read -r REPLY
@@ -382,16 +494,6 @@ show_completion() {
         else
             launch_application
         fi
-    else
-        # Non-interactive (like curl | bash) - provide instructions and attempt auto-launch
-        print_info "Running in non-interactive mode (e.g., via curl | bash)"
-        echo -e "\n${YELLOW}${ARROW} Auto-launching the wallpaper setter in 3 seconds...${NC}"
-        echo -e "${CYAN}${INFO} Press Ctrl+C to cancel and run manually later${NC}"
-
-        # Give user a chance to cancel
-        sleep 3
-
-        launch_application
     fi
 }
 
@@ -418,12 +520,17 @@ launch_application() {
 
 # Main execution
 main() {
+    # Detect if we're running from curl by checking if we have the setup.sh file locally
+    if [[ ! -f "setup.sh" ]] || [[ "${BASH_SOURCE[0]}" == "/dev/fd/"* ]]; then
+        export SETUP_FROM_CURL="true"
+    fi
+
     clear
     print_header "🎥 macOS Live Video Wallpaper Setter - Easy Setup"
-    
+
     echo -e "${CYAN}This script will automatically install all dependencies and set up${NC}"
     echo -e "${CYAN}the macOS Live Video Wallpaper Setter for you.${NC}\n"
-    
+
     echo -e "${CYAN}${INFO} Tested on macOS Sequoia 15.5${NC}"
     echo -e "${CYAN}${INFO} Compatible with macOS 10.15+${NC}\n"
     
