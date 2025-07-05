@@ -6,6 +6,16 @@
 
 set -e  # Exit on any error
 
+# Cleanup function to kill background sudo process
+cleanup() {
+    if [[ -n "$SUDO_PID" ]]; then
+        kill "$SUDO_PID" 2>/dev/null || true
+    fi
+}
+
+# Set trap to cleanup on exit
+trap cleanup EXIT
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -86,6 +96,8 @@ check_macos() {
     fi
 }
 
+
+
 # Function to request sudo permissions upfront
 request_sudo() {
     print_step "Requesting administrator privileges"
@@ -94,13 +106,21 @@ request_sudo() {
     print_info "  • Access system wallpaper directories"
     print_info "  • Install wallpaper files"
     echo
-    
+
     # Request sudo and keep it alive
     sudo -v
-    
-    # Keep sudo alive in background
-    while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-    
+
+    # Keep sudo alive in background with more frequent refresh
+    (
+        while true; do
+            sleep 30  # Refresh every 30 seconds to be safe
+            if ! sudo -n true 2>/dev/null; then
+                break  # Exit if sudo is no longer valid
+            fi
+        done
+    ) &
+    SUDO_PID=$!
+
     print_success "Administrator privileges granted"
 }
 
@@ -212,7 +232,6 @@ clone_repository() {
 
         print_info "Cloning repository..."
         if git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git; then
-            cd MacOS-Live-Video-Wallpaper
             print_success "Repository cloned successfully"
         else
             print_error "Failed to clone repository"
@@ -221,9 +240,12 @@ clone_repository() {
             local temp_dir="temp-repo-$$"
             git clone https://github.com/satyajiit/MacOS-Live-Video-Wallpaper.git "$temp_dir"
             mv "$temp_dir" "$repo_dir"
-            cd MacOS-Live-Video-Wallpaper
             print_success "Repository cloned successfully (alternative method)"
         fi
+
+        # Change to the repository directory and export it
+        cd MacOS-Live-Video-Wallpaper
+        export REPO_DIR="$(pwd)"
     else
         print_error "package.json not found. Are you in the correct directory?"
         print_info "Please run this script from the MacOS-Live-Video-Wallpaper directory"
@@ -236,7 +258,9 @@ install_npm_deps() {
     print_step "Installing Node.js dependencies"
 
     if [[ ! -f "package.json" ]]; then
-        print_error "package.json not found. This should not happen after repository setup."
+        print_error "package.json not found in $(pwd)"
+        print_info "Directory contents:"
+        ls -la
         exit 1
     fi
 
@@ -326,7 +350,7 @@ EOF
 # Function to display completion message
 show_completion() {
     print_header "🎉 Setup Complete!"
-    
+
     echo -e "${GREEN}${ROCKET} Your macOS Live Video Wallpaper Setter is ready to use!${NC}\n"
     
     echo -e "${CYAN}${ARROW} Quick Start Options:${NC}"
@@ -353,7 +377,21 @@ show_completion() {
         echo -e "\n${GREEN}Setup complete! Run the application whenever you're ready.${NC}"
     else
         echo -e "\n${GREEN}${ROCKET} Launching macOS Live Video Wallpaper Setter...${NC}\n"
-        sudo node index.js
+        if [[ -f "index.js" ]]; then
+            print_info "Starting application with administrator privileges..."
+            # Test if sudo is still valid
+            if sudo -n true 2>/dev/null; then
+                print_info "Using existing sudo session..."
+            else
+                print_info "Refreshing administrator privileges..."
+                sudo -v
+            fi
+            sudo node index.js
+        else
+            print_error "index.js not found in $(pwd)"
+            print_info "Directory contents:"
+            ls -la
+        fi
     fi
 }
 
@@ -374,8 +412,13 @@ main() {
     # Request sudo permissions upfront
     request_sudo
     
-    # Setup project files (handles git installation and restart if needed)
+    # Setup project files (handles git installation and directory change)
     clone_repository
+
+    # Ensure we're in the correct directory after cloning
+    if [[ -n "$REPO_DIR" ]]; then
+        cd "$REPO_DIR"
+    fi
 
     # Install dependencies
     install_homebrew

@@ -47,7 +47,7 @@ const CONFIG = {
         backupDir: 'wallpaper_backups',
         requiredFormat: '.mov',
         minRecommendedResolution: 2160, // 4K
-        minRecommendedDuration: 90, // 1 minute and 30 seconds
+        minRecommendedDuration: 60, // 1 minute in seconds
         maxRetryAttempts: 30,
         retryInterval: 1000
     },

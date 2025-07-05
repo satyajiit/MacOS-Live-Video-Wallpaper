@@ -57,6 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/satyajiit/MacOS-Live-Video-Wallpape
 - 🛠️ Install ffmpeg and yt-dlp - *Precision Tools*
 - 📦 Install all dependencies - *Full Tank*
 - 🎯 Create an easy launcher - *One-Click Start*
+- 🔐 Seamless privilege management - *No Extra Passwords*
 - 🚀 Start the application automatically - *Lights Out!*
 
 ## 🎯 **GRID POSITIONS** (Usage Options)
